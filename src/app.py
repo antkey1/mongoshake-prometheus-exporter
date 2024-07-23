@@ -1,4 +1,3 @@
-import time
 import asyncio
 import prometheus_client
 from prometheus_client import Gauge, start_http_server
@@ -22,7 +21,7 @@ prom_metrics = {
     "logs_repl": Gauge(metric_prefix + "_logs_repl", "Number of logs (repl)",["replset", "url"]),
     "logs_success": Gauge(metric_prefix + "_logs_success", "Number of successful logs",["replset", "url"]),
     "tps": Gauge(metric_prefix + "_tps", "Transactions per second",["replset", "url"]),
-    "replication_latency": Gauge(metric_prefix + "_replication_latency", "Replication_latency in MS",["replset", "url"])
+    "replication_latency": Gauge(metric_prefix + "_replication_latency", "Replication_latency in seconds",["replset", "url"])
 }
 
 # Fetch url data
@@ -42,10 +41,10 @@ async def fetch_metrics(url, prom_metrics):
 def update_prometheus_metrics(data, prom_metrics, url):
     # Custom metrics
     data_copy = data
-    lsn_ack_ts = int(data_copy["lsn_ack"]["ts"])
-    lsn_ts = int(data_copy["lsn"]["ts"])
+    lsn_ack_unix = int(data_copy["lsn_ack"]["unix"])
+    lsn_unix = int(data_copy["lsn"]["unix"])
     replset = data_copy["replset"]
-    replication_latency = lsn_ts - lsn_ack_ts
+    replication_latency = lsn_unix - lsn_ack_unix
     data_copy["replication_latency"] = replication_latency
 
     # Set metrics
